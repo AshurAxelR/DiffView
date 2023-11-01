@@ -44,10 +44,6 @@ import java.util.HashMap;
  */
 public class Diff {
 
-	public enum DiffType {
-		notChanged, deleted, inserted;
-	}
-
 	/**
 	 * details of one difference
 	 */

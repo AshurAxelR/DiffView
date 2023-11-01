@@ -7,7 +7,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 
 import com.xrbpowered.diff.Diff;
-import com.xrbpowered.diff.Diff.DiffType;
+import com.xrbpowered.diff.DiffType;
 import com.xrbpowered.zoomui.GraphAssist;
 import com.xrbpowered.zoomui.UIContainer;
 import com.xrbpowered.zoomui.UIElement;

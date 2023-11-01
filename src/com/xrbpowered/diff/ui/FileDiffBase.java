@@ -17,8 +17,8 @@ public class FileDiffBase extends UIContainer {
 
 	private static UIModalWindow<File> openDlgA, openDlgB;
 
-	private static UIModalWindow<File> createOpenDialog(UITextBox txtPath) {
-		return UIFileBrowser.createDialog("Open file", new ResultHandler<File>() {
+	private static UIModalWindow<File> createOpenDialog(String title, UITextBox txtPath) {
+		return UIFileBrowser.createDialog(title, new ResultHandler<File>() {
 			@Override
 			public void onResult(File result) {
 				txtPath.editor.setText(result.getPath());
@@ -44,7 +44,7 @@ public class FileDiffBase extends UIContainer {
 				return true;
 			}
 		};
-		openDlgA = createOpenDialog(txtPathA);
+		openDlgA = createOpenDialog("Select original file", txtPathA);
 		btnBrowseA = new UIToolButton(this, UIToolButton.iconPath+"folder.svg", 16, 2) {
 			public void onAction() {
 				openDlgA.show();
@@ -57,7 +57,7 @@ public class FileDiffBase extends UIContainer {
 				return true;
 			}
 		};
-		openDlgB = createOpenDialog(txtPathB);
+		openDlgB = createOpenDialog("Select updated file", txtPathB);
 		btnBrowseB = new UIToolButton(this, UIToolButton.iconPath+"folder.svg", 16, 2) {
 			public void onAction() {
 				openDlgB.show();
