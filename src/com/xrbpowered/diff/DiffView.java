@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import com.xrbpowered.diff.ui.FileDiffBase;
+import com.xrbpowered.diff.ui.FolderDiffView;
 import com.xrbpowered.zoomui.std.UIMessageBox;
 import com.xrbpowered.zoomui.std.UIMessageBox.MessageResult;
 import com.xrbpowered.zoomui.swing.SwingFrame;
@@ -43,26 +44,55 @@ public class DiffView {
 	}
 	
 	public static String[] loadLines(String path, String[] old) {
+		if(path==null || path.isEmpty())
+			return new String[] {};
 		try {
 			String text = loadString(path, true);
 			return (text==null) ? old : text.replace("\r", "").split("\n");
 		}
 		catch (IOException e) {
-			UIMessageBox.show("Error", e.getMessage(),
+			String msg = e.getMessage().replaceAll("[\\\\\\/]", "$0<span></span>"); // <wbr> not working
+			UIMessageBox.show("Error", msg,
 					UIMessageBox.iconError, new MessageResult[] {MessageResult.ok}, null);
 			return old;
 		}
 	}
-	
+
 	public static void main(String[] args) {
-		SwingFrame frame = new SwingFrame(SwingWindowFactory.use(), "File DiffView", 960, 720, true, false) {
+		boolean folder = false;
+		String pathA = null;
+		String pathB = null;
+		
+		for(int i=0; i<args.length; i++) {
+			switch(args[i]) {
+				case "-r":
+					folder = true;
+					break;
+				default:
+					if(pathA==null)
+						pathA = args[i];
+					else if(pathB==null)
+						pathB = args[i];
+					else {
+						System.err.println("Too many arguments");
+						System.exit(-1);
+					}
+					break;
+			}
+		}
+		
+		SwingFrame frame = new SwingFrame(SwingWindowFactory.use(),
+				"DiffView - "+(folder ? "Directory" : "File"), 960, 720, true, false) {
 			@Override
 			public boolean onClosing() {
 				confirmClosing();
 				return false;
 			}
 		};
-		new FileDiffBase(frame.getContainer());
+		if(folder)
+			new FolderDiffView(frame.getContainer()).setDiff(pathA, pathB);
+		else
+			new FileDiffBase(frame.getContainer()).setPaths(pathA, pathB);
 		frame.show();
 	}
 

@@ -66,6 +66,15 @@ public class FileDiffBase extends UIContainer {
 		diffView = new FileDiffView.Area(this);
 	}
 	
+	public void setPaths(String pathA, String pathB) {
+		txtPathA.editor.setText(pathA==null ? "" : pathA);
+		txtPathB.editor.setText(pathB==null ? "" : pathB);
+		diffView.viewer.setDiff(
+				DiffView.loadLines(txtPathA.editor.getText(), diffView.viewer.linesA),
+				DiffView.loadLines(txtPathB.editor.getText(), diffView.viewer.linesB)
+			);
+	}
+	
 	@Override
 	protected void paintSelf(GraphAssist g) {
 		g.fill(this, Color.WHITE); // new Color(0xf2f2f2));

@@ -25,14 +25,13 @@ public class FileDiffView extends UIElement {
 	public static final Color colorBgAmber = new Color(0xfffdee);
 	public static final Color colorBgGreen = new Color(0xeeffee);
 
-	private static final Color colorMarginText = new Color(0xaaaaaa);
+	public static final Color colorMarginText = new Color(0xaaaaaa);
 
-	private static final Color[] bgColors = {Color.WHITE, colorBgRed, colorBgGreen};
-	private static final Color[] marginColors = {new Color(0xf5f5f5), new Color(0xffeadd), new Color(0xddffdd)};
-	private static final Color[] fgColors = {Color.BLACK, colorRed, colorGreen};
-	private static final Color[] borderColors = {colorMarginText, colorRed, colorGreen};
-	private static final String[] linePrefixes = {" ", "-", "+"};
-	
+	public static final Color[] bgColors = {Color.WHITE, colorBgRed, colorBgGreen, Color.WHITE};
+	public static final Color[] marginColors = {new Color(0xf5f5f5), new Color(0xffeadd), new Color(0xddffdd), new Color(0xfffbdd)};
+	public static final Color[] fgColors = {Color.BLACK, colorRed, colorGreen, colorAmber};
+	public static final Color[] borderColors = {colorMarginText, colorRed, colorGreen, colorAmber};
+	public static final String[] linePrefixes = {" ", "-", "+", "~"};
 
 	public class Line {
 		public DiffType type;
@@ -148,11 +147,7 @@ public class FileDiffView extends UIElement {
 	}
 	
 	protected void updateMargins() {
-		int n = Math.max(linesA.length+1, linesB.length+1);
-		int d = 9;
-		while(d<n)
-			d = d*10+9;
-		xmargin = fm.stringWidth(Integer.toString(d))+(int)(8/pixelScale);
+		xmargin = numberWidth(fm, Math.max(linesA.length+1, linesB.length+1), null, (int)(8/pixelScale));
 		x0 = xmargin*2+wpref;
 	}
 	
@@ -274,7 +269,13 @@ public class FileDiffView extends UIElement {
 		g.setColor(borderColors[0]);
 		g.line(xmargin, y-lineHeight+descent, xmargin, maxy);
 		g.line(xmargin*2, y-lineHeight+descent, xmargin*2, maxy);
-
 	}
 
+	public static int numberWidth(FontMetrics fm, int n, String format, int margin) {
+		int d = 9;
+		while(d<n)
+			d = d*10+9;
+		return fm.stringWidth(format==null ? Integer.toString(d) : String.format(format, d))+margin;
+	}
+	
 }
