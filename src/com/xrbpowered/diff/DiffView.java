@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import com.xrbpowered.diff.ui.FileDiffBase;
-import com.xrbpowered.diff.ui.FolderDiffView;
+import com.xrbpowered.diff.ui.FolderDiffBase;
 import com.xrbpowered.zoomui.std.UIMessageBox;
 import com.xrbpowered.zoomui.std.UIMessageBox.MessageResult;
 import com.xrbpowered.zoomui.swing.SwingFrame;
@@ -90,9 +90,9 @@ public class DiffView {
 			}
 		};
 		if(folder)
-			new FolderDiffView(frame.getContainer()).setDiff(pathA, pathB);
+			new FolderDiffBase(frame.getContainer()).fileSel.setPaths(pathA, pathB);
 		else
-			new FileDiffBase(frame.getContainer()).setPaths(pathA, pathB);
+			new FileDiffBase(frame.getContainer()).fileSel.setPaths(pathA, pathB);
 		frame.show();
 	}
 

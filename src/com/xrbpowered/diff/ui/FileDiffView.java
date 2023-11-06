@@ -128,6 +128,7 @@ public class FileDiffView extends UIElement {
 			}
 		}
 		updateSize = true;
+		panView().setPan(0, 0);
 	}
 	
 	@Override

@@ -119,8 +119,15 @@ public class FolderDiffView extends UIListBox {
 	protected int maxSize = 0;
 	protected int itemMargin = 0;
 	
+	public Path pathA = strToPath(".");
+	public Path pathB = strToPath(".");
+	
 	public FolderDiffView(UIContainer parent) {
 		super(parent);
+	}
+	
+	private static Path strToPath(String path) {
+		return new File(path).toPath().toAbsolutePath().normalize();
 	}
 	
 	public void setDiff(String pathA, String pathB) {
@@ -131,6 +138,11 @@ public class FolderDiffView extends UIListBox {
 			Path baseA = new File(pathA).toPath().toAbsolutePath().normalize();
 			Path baseB = new File(pathB).toPath().toAbsolutePath().normalize();
 			FolderDiff.compareFolders(baseA, baseA.toFile(), baseB, baseB.toFile(), res);
+			System.out.println(baseA);
+			System.out.println(baseB);
+			System.out.println();
+			this.pathA = baseA;
+			this.pathB = baseB;
 		}
 		
 		maxSize = 0;
