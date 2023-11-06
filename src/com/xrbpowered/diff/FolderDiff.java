@@ -135,17 +135,5 @@ public class FolderDiff {
 				res.add(i);
 		}
 	}
-
-	public static void main(String[] args) {
-		Path baseA = new File(args[0]).toPath().toAbsolutePath().normalize();
-		Path baseB = new File(args[1]).toPath().toAbsolutePath().normalize();
-		ArrayList<DiffItem> res = new ArrayList<>();
-		compareFolders(baseA, baseA.toFile(), baseB, baseB.toFile(), res);
-		
-		String[] linePrefixes = {" ", "-", "+", "~"};
-		for(DiffItem i : res) {
-			System.out.printf("%s%s%s (%d)\n", linePrefixes[i.type.ordinal()], i.path, i.isDir ? "/" : "", i.size);
-		}
-	}
 	
 }

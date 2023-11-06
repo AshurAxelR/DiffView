@@ -26,6 +26,9 @@ import com.xrbpowered.zoomui.std.text.UITextBox;
 
 public class FolderDiffView extends UIListBox {
 
+	public static final SvgIcon fileIcon = new SvgIcon(UIToolButton.iconPath+"file.svg", 160, UIToolButton.palette);
+	public static final SvgIcon folderIcon = new SvgIcon(UIToolButton.iconPath+"folder.svg", 160, UIToolButton.palette);
+
 	public static final SvgIcon[] diffIcons = {
 			null,
 			new SvgIcon(UIToolButton.iconPath+"o_minus.svg", 160, new IconPalette(new Color[][] {
@@ -39,7 +42,8 @@ public class FolderDiffView extends UIListBox {
 			}))
 	};
 
-	public static float itemHeight = 24f;
+	private static final float itemHeight = 24f;
+	private static final int nameX = 24; 
 
 	public class FolderDiffItem extends UIListItem {
 		public FolderDiffItem(int index, FolderDiff.DiffItem diff) {
@@ -54,14 +58,15 @@ public class FolderDiffView extends UIListBox {
 			g.setFont(UITextBox.font);
 			FontMetrics fm = g.getFontMetrics();
 			if(itemMargin==0)
-				itemMargin = numberWidth(fm, maxSize, "+%d", 8);
+				itemMargin = numberWidth(fm, maxSize, "+%d", 12);
 			
 			int type = diff.type.ordinal();
 			boolean sel = (index==list.getSelectedIndex());
 			g.fill(this, sel ? colorSelection : hover ? colorHighlight : bgColors[type]);
 			
 			String name = diff.path.getFileName().toString();
-			int maxw = (int)getWidth() - fm.stringWidth(name) - itemMargin - 8;
+			int nameWidth = fm.stringWidth(name);
+			int maxw = (int)getWidth() - nameWidth - itemMargin - nameX;
 			Path dir = diff.path.getParent();
 			String dirName = null;
 			int dirNameWidth = 0;
@@ -76,7 +81,7 @@ public class FolderDiffView extends UIListBox {
 			}
 			
 			boolean clip = g.pushClip(0, 0, getWidth()-itemMargin, getHeight());
-			int x = 4;
+			int x = nameX;
 			g.setColor(sel ? colorSelectedText : colorMarginText);
 			if(dir!=null || cut) {
 				if(dir==null) {
@@ -91,13 +96,19 @@ public class FolderDiffView extends UIListBox {
 			g.drawString(name, x, getHeight()/2, GraphAssist.LEFT, GraphAssist.CENTER);
 			if(clip) g.popClip();
 			
+			int rightx = (int)getWidth() - itemMargin;
+			if(x+nameWidth > rightx)
+				g.line(rightx, 0, rightx, getHeight(), colorBorder);
+			
 			if(diff.isDir) {
-				g.fillRect(getWidth()-itemMargin, 0, itemMargin, getHeight(), sel ? fgColors[type] : marginColors[type]);
+				folderIcon.paint(g.graph, sel ? 1 : 0, 4, 4, 16, getPixelScale(), true);
+				g.fillRect(rightx, 0, itemMargin, getHeight(), sel ? fgColors[type] : marginColors[type]);
 				g.setColor(sel ? Color.WHITE : fgColors[type]);
 				g.drawString(String.format("%+d", diff.type==DiffType.deleted ? -diff.size : diff.size),
-						getWidth()-itemMargin/2, getHeight()/2, GraphAssist.CENTER, GraphAssist.CENTER);
+						getWidth()-4, getHeight()/2, GraphAssist.RIGHT, GraphAssist.CENTER);
 			}
 			else {
+				fileIcon.paint(g.graph, sel ? 1 : 0, 4, 4, 16, getPixelScale(), true);
 				SvgIcon icon = diffIcons[type];
 				if(icon!=null)
 					icon.paint(g.graph, 0, getWidth()-20, 4, 16, getPixelScale(), true);
