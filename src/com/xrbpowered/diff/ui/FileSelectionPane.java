@@ -82,10 +82,6 @@ public class FileSelectionPane extends UIContainer {
 			txtPathB.editor.setText(pathB);
 		if(diff!=null)
 			diff.setDiff(pathA, pathB);
-		/*diffView.viewer.setDiff(
-				DiffView.loadLines(txtPathA.editor.getText(), diffView.viewer.linesA),
-				DiffView.loadLines(txtPathB.editor.getText(), diffView.viewer.linesB)
-			);*/
 	}
 	
 	@Override

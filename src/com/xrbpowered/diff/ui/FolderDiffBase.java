@@ -13,6 +13,7 @@ public class FolderDiffBase extends UIContainer implements DiffListener {
 	public final FileSelectionPane fileSel;
 	public final FolderDiffView folderDiffView;
 	public final FileDiffView.Area diffView;
+	public final ErrorOverlay error;
 	
 	private final UISplitContainer split;
 	
@@ -25,17 +26,20 @@ public class FolderDiffBase extends UIContainer implements DiffListener {
 			@Override
 			public void onItemSelected(UIListItem item) {
 				FolderDiff.DiffItem diff = (FolderDiff.DiffItem) item.object;
-				if(diff.isDir)
+				if(diff.isDir) {
 					diffView.viewer.setDiff(null, null);
+					error.show(diff.path.getFileName().toString() + " is a directory.");
+				}
 				else {
 					String fileA = diff.type==DiffType.inserted ? "" : new File(pathA.toFile(), diff.path.toString()).toPath().toString();
 					String fileB = diff.type==DiffType.deleted ? "" : new File(pathB.toFile(), diff.path.toString()).toPath().toString();
-					FileDiffBase.setDiff(diffView.viewer, fileA, fileB);
+					FileDiffBase.setDiff(diffView.viewer, fileA, fileB, error);
 				}
 			}
 		};
 		
 		diffView = new FileDiffView.Area(split.second);
+		error = new ErrorOverlay(split.second);
 	}
 	
 	@Override
@@ -46,6 +50,7 @@ public class FolderDiffBase extends UIContainer implements DiffListener {
 			pathB = folderDiffView.pathB.toString();
 		folderDiffView.setDiff(pathA, pathB);
 		diffView.viewer.setDiff(null, null);
+		error.show("Select a file in the list to view the difference.");
 	}
 		
 	@Override

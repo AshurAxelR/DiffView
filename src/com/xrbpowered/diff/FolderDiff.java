@@ -45,7 +45,10 @@ public class FolderDiff {
 	
 	private static int countFiles(File dir) {
 		int sum = 0;
-		for(String name : dir.list()) {
+		String[] list = (dir==null) ? null : dir.list();
+		if(list==null)
+			return sum;
+		for(String name : list) {
 			if(name.equals(".") || name.equals(".."))
 				continue;
 			File f = new File(dir, name);
@@ -59,7 +62,10 @@ public class FolderDiff {
 	
 	private static TreeSet<Path> listPaths(Path root, File dir) {
 		TreeSet<Path> res = new TreeSet<>();
-		for(String name : dir.list()) {
+		String[] list = (dir==null) ? null : dir.list();
+		if(list==null)
+			return res;
+		for(String name : list) {
 			if(name.equals(".") || name.equals(".."))
 				continue;
 			Path p = root.relativize(new File(dir, name).toPath());

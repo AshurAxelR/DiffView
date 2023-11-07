@@ -7,6 +7,7 @@ import static com.xrbpowered.diff.ui.FileDiffView.marginColors;
 import static com.xrbpowered.diff.ui.FileDiffView.numberWidth;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.io.File;
 import java.nio.file.Path;
@@ -26,6 +27,8 @@ import com.xrbpowered.zoomui.std.text.UITextBox;
 
 public class FolderDiffView extends UIListBox {
 
+	public static final Font font = UITextBox.font;
+	
 	public static final SvgIcon fileIcon = new SvgIcon(UIToolButton.iconPath+"file.svg", 160, UIToolButton.palette);
 	public static final SvgIcon folderIcon = new SvgIcon(UIToolButton.iconPath+"folder.svg", 160, UIToolButton.palette);
 
@@ -55,7 +58,7 @@ public class FolderDiffView extends UIListBox {
 		public void paint(GraphAssist g) {
 			FolderDiff.DiffItem diff = (FolderDiff.DiffItem) object;
 			
-			g.setFont(UITextBox.font);
+			g.setFont(font);
 			FontMetrics fm = g.getFontMetrics();
 			if(itemMargin==0)
 				itemMargin = numberWidth(fm, maxSize, "+%d", 12);
@@ -138,9 +141,6 @@ public class FolderDiffView extends UIListBox {
 			Path baseA = new File(pathA).toPath().toAbsolutePath().normalize();
 			Path baseB = new File(pathB).toPath().toAbsolutePath().normalize();
 			FolderDiff.compareFolders(baseA, baseA.toFile(), baseB, baseB.toFile(), res);
-			System.out.println(baseA);
-			System.out.println(baseB);
-			System.out.println();
 			this.pathA = baseA;
 			this.pathB = baseB;
 		}
@@ -158,4 +158,9 @@ public class FolderDiffView extends UIListBox {
 		return new FolderDiffItem(index, i);
 	}
 
+	@Override
+	protected void paintBorder(GraphAssist g) {
+		g.hborder(this, GraphAssist.TOP, colorBorder);
+	}
+	
 }

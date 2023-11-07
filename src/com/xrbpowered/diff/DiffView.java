@@ -2,12 +2,11 @@ package com.xrbpowered.diff;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 import com.xrbpowered.diff.ui.FileDiffBase;
 import com.xrbpowered.diff.ui.FolderDiffBase;
-import com.xrbpowered.zoomui.std.UIMessageBox;
-import com.xrbpowered.zoomui.std.UIMessageBox.MessageResult;
 import com.xrbpowered.zoomui.swing.SwingFrame;
 import com.xrbpowered.zoomui.swing.SwingWindowFactory;
 
@@ -15,7 +14,7 @@ public class DiffView {
 
 	private static final int testEncodingLimit = 4096;
 	
-	public static String loadString(String path, boolean testEncoding) throws IOException {
+	public static String loadString(String path, boolean testEncoding) throws IOException, UnsupportedEncodingException {
 		FileInputStream f = new FileInputStream(path);
 		byte[] buf = new byte[f.available()];
 		f.read(buf);
@@ -37,27 +36,12 @@ public class DiffView {
 				valid = false;
 			}
 			if(!valid)
-				throw new IOException("Not a valid UTF-8 text");
+				throw new UnsupportedEncodingException();
 		}
 		
 		return s;
 	}
 	
-	public static String[] loadLines(String path, String[] old) {
-		if(path==null || path.isEmpty())
-			return new String[] {};
-		try {
-			String text = loadString(path, true);
-			return (text==null) ? old : text.replace("\r", "").split("\n");
-		}
-		catch (IOException e) {
-			String msg = e.getMessage().replaceAll("[\\\\\\/]", "$0<span></span>"); // <wbr> not working
-			UIMessageBox.show("Error", msg,
-					UIMessageBox.iconError, new MessageResult[] {MessageResult.ok}, null);
-			return old;
-		}
-	}
-
 	public static void main(String[] args) {
 		boolean folder = false;
 		String pathA = null;
