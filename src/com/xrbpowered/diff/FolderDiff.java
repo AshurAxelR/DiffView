@@ -36,31 +36,40 @@ public class FolderDiff {
 			this.path = p;
 		}
 		
-		public DiffItem setDir(File dir) {
+		public DiffItem setDir(Path root, File dir, Ignore ignore) {
 			this.isDir = true;
-			this.size = countFiles(dir);
+			this.size = countFiles(root, dir, ignore);
 			return this;
 		}
 	}
 	
-	private static int countFiles(File dir) {
+	private static int countFiles(Path root, File dir, Ignore ignore) {
 		int sum = 0;
 		String[] list = (dir==null) ? null : dir.list();
 		if(list==null)
 			return sum;
+		
+		ignore = expandIgnore(root, dir, ignore);
+		
 		for(String name : list) {
 			if(name.equals(".") || name.equals(".."))
 				continue;
 			File f = new File(dir, name);
-			if(f.isDirectory())
-				sum += countFiles(f);
+			boolean isDir = f.isDirectory();
+			if(ignore!=null) {
+				Path p = root.relativize(f.toPath());
+				if(ignore.match(p, f.isDirectory()))
+					continue;
+			}
+			if(isDir)
+				sum += countFiles(root, f, ignore);
 			else
 				sum++;
 		}
 		return sum;
 	}
 	
-	private static TreeSet<Path> listPaths(Path root, File dir) {
+	private static TreeSet<Path> listPaths(Path root, File dir, Ignore ignore) {
 		TreeSet<Path> res = new TreeSet<>();
 		String[] list = (dir==null) ? null : dir.list();
 		if(list==null)
@@ -68,7 +77,10 @@ public class FolderDiff {
 		for(String name : list) {
 			if(name.equals(".") || name.equals(".."))
 				continue;
-			Path p = root.relativize(new File(dir, name).toPath());
+			File f = new File(dir, name);
+			Path p = root.relativize(f.toPath());
+			if(ignore!=null && ignore.match(p, f.isDirectory()))
+				continue;
 			res.add(p);
 		}
 		return res;
@@ -94,10 +106,19 @@ public class FolderDiff {
 			return false;
 		}
 	}
+	
+	private static Ignore expandIgnore(Path root, File dir, Ignore ignore) {
+		File ignoreFile = new File(dir, ".gitignore");
+		if(ignoreFile.exists())
+			ignore = Ignore.load(ignoreFile, root, ignore);
+		return ignore;
+	}
 
-	public static void compareFolders(Path rootA, File dirA, Path rootB, File dirB, ArrayList<DiffItem> res) {
-		TreeSet<Path> setA = listPaths(rootA, dirA);
-		TreeSet<Path> setB = listPaths(rootB, dirB);
+	public static void compareFolders(Path rootA, File dirA, Path rootB, File dirB, Ignore ignore, ArrayList<DiffItem> res) {
+		ignore = expandIgnore(rootB, dirB, ignore);
+		
+		TreeSet<Path> setA = listPaths(rootA, dirA, ignore);
+		TreeSet<Path> setB = listPaths(rootB, dirB, ignore);
 		
 		TreeSet<Path> union = new TreeSet<>();
 		union.addAll(setA);
@@ -114,16 +135,16 @@ public class FolderDiff {
 				boolean isDirA = fA.isDirectory();
 				boolean isDirB = fB.isDirectory();
 				if(isDirA && isDirB) {
-					compareFolders(rootA, fA, rootB, fB, res);
+					compareFolders(rootA, fA, rootB, fB, ignore, res);
 					continue;
 				}
 				else if(isDirA) {
-					res.add(new DiffItem(DiffType.deleted, p).setDir(fA));
+					res.add(new DiffItem(DiffType.deleted, p).setDir(rootA, fA, ignore));
 					res.add(new DiffItem(DiffType.inserted, p));
 				}
 				else if(isDirB) {
 					res.add(new DiffItem(DiffType.deleted, p));
-					res.add(new DiffItem(DiffType.inserted, p).setDir(fB));
+					res.add(new DiffItem(DiffType.inserted, p).setDir(rootB, fB, ignore));
 				}
 				else {
 					if(isModified(fA, fB))
@@ -131,10 +152,10 @@ public class FolderDiff {
 				}
 			}
 			else if(i.type==DiffType.deleted && fA.isDirectory()) {
-				i.setDir(fA);
+				i.setDir(rootA, fA, ignore);
 			}
 			else if(i.type==DiffType.inserted && fB.isDirectory()) {
-				i.setDir(fB);
+				i.setDir(rootB, fB, ignore);
 			}
 			
 			if(i.type!=DiffType.notChanged)

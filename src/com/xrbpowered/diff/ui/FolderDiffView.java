@@ -15,6 +15,7 @@ import java.util.ArrayList;
 
 import com.xrbpowered.diff.DiffType;
 import com.xrbpowered.diff.FolderDiff;
+import com.xrbpowered.diff.Ignore;
 import com.xrbpowered.diff.FolderDiff.DiffItem;
 import com.xrbpowered.zoomui.GraphAssist;
 import com.xrbpowered.zoomui.UIContainer;
@@ -75,7 +76,7 @@ public class FolderDiffView extends UIListBox {
 			int dirNameWidth = 0;
 			boolean cut = false;
 			while(dir!=null) {
-				dirName = dir.toString()+(cut ? File.separator+"..." : "")+File.separator;
+				dirName = dir.toString().replace(File.separator, "/")+(cut ? "/..." : "")+"/";
 				dirNameWidth = fm.stringWidth(dirName);
 				if(dirNameWidth<maxw)
 					break;
@@ -88,7 +89,7 @@ public class FolderDiffView extends UIListBox {
 			g.setColor(sel ? colorSelectedText : colorMarginText);
 			if(dir!=null || cut) {
 				if(dir==null) {
-					dirName = "..."+File.separator;
+					dirName = ".../";
 					dirNameWidth = fm.stringWidth(dirName);
 				}
 				g.drawString(dirName, x, getHeight()/2, GraphAssist.LEFT, GraphAssist.CENTER);
@@ -140,7 +141,7 @@ public class FolderDiffView extends UIListBox {
 		if(pathA!=null && pathB!=null) {
 			Path baseA = new File(pathA).toPath().toAbsolutePath().normalize();
 			Path baseB = new File(pathB).toPath().toAbsolutePath().normalize();
-			FolderDiff.compareFolders(baseA, baseA.toFile(), baseB, baseB.toFile(), res);
+			FolderDiff.compareFolders(baseA, baseA.toFile(), baseB, baseB.toFile(), Ignore.defaultIgnore, res);
 			this.pathA = baseA;
 			this.pathB = baseB;
 		}

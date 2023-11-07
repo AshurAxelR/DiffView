@@ -20,7 +20,7 @@ public class FileSelectionPane extends UIContainer {
 		return UIFileBrowser.createDialog(title, new ResultHandler<File>() {
 			@Override
 			public void onResult(File result) {
-				txtPath.editor.setText(result.getPath());
+				txtPath.editor.setText(result.getPath().replace(File.separator, "/"));
 				txtPath.onEnter();
 				txtPath.repaint();
 			}
@@ -82,6 +82,7 @@ public class FileSelectionPane extends UIContainer {
 			txtPathB.editor.setText(pathB);
 		if(diff!=null)
 			diff.setDiff(pathA, pathB);
+		// TODO apply path back to file dialogs
 	}
 	
 	@Override
