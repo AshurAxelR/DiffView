@@ -14,13 +14,15 @@ import com.xrbpowered.zoomui.std.text.UITextBox;
 
 public class FileSelectionPane extends UIContainer {
 
-	private static UIModalWindow<File> openDlgA, openDlgB;
+	private UIModalWindow<File> openDlgA, openDlgB;
 
-	private static UIModalWindow<File> createOpenDialog(String title, final UITextBox txtPath) {
+	private UIModalWindow<File> createOpenDialog(String title, final UITextBox txtPath) {
 		return UIFileBrowser.createDialog(title, new ResultHandler<File>() {
 			@Override
 			public void onResult(File result) {
-				txtPath.editor.setText(result.getPath().replace(File.separator, "/"));
+				if(folderMode && result!=null && !result.isDirectory())
+					result = result.getParentFile();
+				txtPath.editor.setText(result==null ? (folderMode ? "." : "") : result.getPath().replace(File.separator, "/"));
 				txtPath.onEnter();
 				txtPath.repaint();
 			}
@@ -51,7 +53,7 @@ public class FileSelectionPane extends UIContainer {
 		openDlgA = createOpenDialog(folder ? "Select original directory" : "Select original file", txtPathA);
 		btnBrowseA = new UIToolButton(this, UIToolButton.iconPath+"folder.svg", 16, 2) {
 			public void onAction() {
-				openDlgA.show();
+				openA();
 			}
 		};
 		
@@ -65,9 +67,25 @@ public class FileSelectionPane extends UIContainer {
 		openDlgB = createOpenDialog(folder ? "Select updated directory" : "Select updated file", txtPathB);
 		btnBrowseB = new UIToolButton(this, UIToolButton.iconPath+"folder.svg", 16, 2) {
 			public void onAction() {
-				openDlgB.show();
+				openB();
 			}
 		};
+	}
+
+	public void openA() {
+		showOpenDlg(openDlgA, txtPathA);
+	}
+
+	public void openB() {
+		showOpenDlg(openDlgB, txtPathB);
+	}
+
+	private static void showOpenDlg(UIModalWindow<File> dlg, UITextBox text) {
+		File dir = new File(text.editor.getText());
+		if(!dir.isDirectory())
+			dir = dir.getParentFile();
+		UIFileBrowser.fromDialog(dlg).setDirectory(dir, false);
+		dlg.show();
 	}
 	
 	public FileSelectionPane setDiffListener(DiffListener diff) {

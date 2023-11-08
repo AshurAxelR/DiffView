@@ -12,6 +12,9 @@ import java.util.TreeSet;
 
 public class FolderDiff {
 
+	public static boolean loadGitIgnore = false;
+	public static boolean loadDiffIgnore = true;
+	
 	public static class DiffItem {
 		public DiffType type;
 		public Path path;
@@ -108,9 +111,16 @@ public class FolderDiff {
 	}
 	
 	private static Ignore expandIgnore(Path root, File dir, Ignore ignore) {
-		File ignoreFile = new File(dir, ".gitignore");
-		if(ignoreFile.exists())
-			ignore = Ignore.load(ignoreFile, root, ignore);
+		if(loadGitIgnore) {
+			File ignoreFile = new File(dir, ".gitignore");
+			if(ignoreFile.exists())
+				ignore = Ignore.load(ignoreFile, root, ignore);
+		}
+		if(loadDiffIgnore) {
+			File ignoreFile = new File(dir, "diff.ignore");
+			if(ignoreFile.exists())
+				ignore = Ignore.load(ignoreFile, root, ignore);
+		}
 		return ignore;
 	}
 

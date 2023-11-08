@@ -1,5 +1,6 @@
 package com.xrbpowered.diff;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -7,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 
 import com.xrbpowered.diff.ui.FileDiffBase;
 import com.xrbpowered.diff.ui.FolderDiffBase;
+import com.xrbpowered.utils.ParseParams;
 import com.xrbpowered.zoomui.swing.SwingFrame;
 import com.xrbpowered.zoomui.swing.SwingWindowFactory;
 
@@ -41,29 +43,21 @@ public class DiffView {
 		
 		return s;
 	}
-	
+
+	private static boolean folder = false;
+	private static String pathA = null;
+	private static String pathB = null;
+
 	public static void main(String[] args) {
-		boolean folder = false;
-		String pathA = null;
-		String pathB = null;
-		
-		for(int i=0; i<args.length; i++) {
-			switch(args[i]) {
-				case "-r":
-					folder = true;
-					break;
-				default:
-					if(pathA==null)
-						pathA = args[i];
-					else if(pathB==null)
-						pathB = args[i];
-					else {
-						System.err.println("Too many arguments");
-						System.exit(-1);
-					}
-					break;
-			}
-		}
+		ParseParams params = new ParseParams();
+		params.addStrParam(v -> pathA = v, "original");
+		params.addStrParam(v -> pathB = v, "updated");
+		params.addFlagParam("-r", v -> folder = v, "directory diff");
+		params.addFlagParam("-gitignore", v -> FolderDiff.loadGitIgnore = v, "load .gitignore from directories");
+		params.addFlagParam("-nodiffignore", v -> FolderDiff.loadGitIgnore = v, "do not load diff.ignore from directories");
+		params.addStrParam("-i", v -> { Ignore.defaultIgnore = Ignore.load(new File(v), null, null); }, "global diff.ignore file");
+		if(!params.parseParams(args))
+			System.exit(-1);
 		
 		SwingFrame frame = new SwingFrame(SwingWindowFactory.use(),
 				"DiffView - "+(folder ? "Directory" : "File"), 960, 720, true, false) {
