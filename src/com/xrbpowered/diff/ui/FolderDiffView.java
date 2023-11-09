@@ -84,39 +84,42 @@ public class FolderDiffView extends UIListBox {
 				cut = true;
 			}
 			
-			boolean clip = g.pushClip(0, 0, getWidth()-itemMargin, getHeight());
-			int x = nameX;
-			g.setColor(sel ? colorSelectedText : colorMarginText);
-			if(dir!=null || cut) {
-				if(dir==null) {
-					dirName = ".../";
-					dirNameWidth = fm.stringWidth(dirName);
-				}
-				g.drawString(dirName, x, getHeight()/2, GraphAssist.LEFT, GraphAssist.CENTER);
-				x += dirNameWidth;
-			}
-			if(!diff.isDir)
-				g.setColor(sel ? colorSelectedText : Color.BLACK);
-			g.drawString(name, x, getHeight()/2, GraphAssist.LEFT, GraphAssist.CENTER);
-			if(clip) g.popClip();
-			
+			int x = 0;
 			int rightx = (int)getWidth() - itemMargin;
-			if(x+nameWidth > rightx)
-				g.line(rightx, 0, rightx, getHeight(), colorBorder);
+			if(rightx>0) {
+				boolean clip = g.pushClip(0, 0, rightx, getHeight());
+				x = nameX;
+				g.setColor(sel ? colorSelectedText : colorMarginText);
+				if(dir!=null || cut) {
+					if(dir==null) {
+						dirName = ".../";
+						dirNameWidth = fm.stringWidth(dirName);
+					}
+					g.drawString(dirName, x, getHeight()/2, GraphAssist.LEFT, GraphAssist.CENTER);
+					x += dirNameWidth;
+				}
+				if(!diff.isDir)
+					g.setColor(sel ? colorSelectedText : Color.BLACK);
+				g.drawString(name, x, getHeight()/2, GraphAssist.LEFT, GraphAssist.CENTER);
+				(diff.isDir ? folderIcon : fileIcon).paint(g.graph, sel ? 1 : 0, 4, 4, 16, getPixelScale(), true);
+				if(clip) g.popClip();
+			}
 			
 			if(diff.isDir) {
-				folderIcon.paint(g.graph, sel ? 1 : 0, 4, 4, 16, getPixelScale(), true);
 				g.fillRect(rightx, 0, itemMargin, getHeight(), sel ? fgColors[type] : marginColors[type]);
 				g.setColor(sel ? Color.WHITE : fgColors[type]);
 				g.drawString(String.format("%+d", diff.type==DiffType.deleted ? -diff.size : diff.size),
 						getWidth()-4, getHeight()/2, GraphAssist.RIGHT, GraphAssist.CENTER);
 			}
 			else {
-				fileIcon.paint(g.graph, sel ? 1 : 0, 4, 4, 16, getPixelScale(), true);
 				SvgIcon icon = diffIcons[type];
 				if(icon!=null)
 					icon.paint(g.graph, 0, getWidth()-20, 4, 16, getPixelScale(), true);
 			}
+			
+			if(rightx>0 && x+nameWidth>rightx)
+				g.line(rightx, 0, rightx, getHeight(), colorBorder);
+
 		}
 	}
 	
@@ -139,12 +142,21 @@ public class FolderDiffView extends UIListBox {
 		
 		ArrayList<DiffItem> res = new ArrayList<>();
 		if(pathA!=null && pathB!=null) {
-			Path baseA = new File(pathA).toPath().toAbsolutePath().normalize();
-			Path baseB = new File(pathB).toPath().toAbsolutePath().normalize();
-			FolderDiff.compareFolders(baseA, baseA.toFile(), baseB, baseB.toFile(), Ignore.defaultIgnore, res);
-			this.pathA = baseA;
-			this.pathB = baseB;
+			Path rootA = FolderDiff.makeRoot(pathA);
+			Path rootB = FolderDiff.makeRoot(pathB);
+			FolderDiff.compareFolders(rootA, rootA.toFile(), rootB, rootB.toFile(), Ignore.defaultIgnore, res);
+			this.pathA = rootA;
+			this.pathB = rootB;
 		}
+		
+		maxSize = 0;
+		itemMargin = 0;
+		setItems(res);
+	}
+	
+	public void setDiff(Path rootA, Path rootB, ArrayList<DiffItem> res) {
+		this.pathA = rootA;
+		this.pathB = rootB;
 		
 		maxSize = 0;
 		itemMargin = 0;

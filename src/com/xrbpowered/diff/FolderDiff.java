@@ -10,6 +10,8 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
+import com.xrbpowered.utils.TaskInterruptedException;
+
 public class FolderDiff {
 
 	public static boolean loadGitIgnore = false;
@@ -46,14 +48,20 @@ public class FolderDiff {
 		}
 	}
 	
+	public static Path makeRoot(String path) {
+		return new File(path).toPath().toAbsolutePath().normalize();
+	}
+	
 	private static int countFiles(Path root, File dir, Ignore ignore) {
-		int sum = 0;
+		TaskInterruptedException.check();
+		
 		String[] list = (dir==null) ? null : dir.list();
 		if(list==null)
-			return sum;
+			return 0;
 		
 		ignore = expandIgnore(root, dir, ignore);
 		
+		int sum = 0;
 		for(String name : list) {
 			if(name.equals(".") || name.equals(".."))
 				continue;
@@ -125,6 +133,8 @@ public class FolderDiff {
 	}
 
 	public static void compareFolders(Path rootA, File dirA, Path rootB, File dirB, Ignore ignore, ArrayList<DiffItem> res) {
+		TaskInterruptedException.check();
+		
 		ignore = expandIgnore(rootB, dirB, ignore);
 		
 		TreeSet<Path> setA = listPaths(rootA, dirA, ignore);
