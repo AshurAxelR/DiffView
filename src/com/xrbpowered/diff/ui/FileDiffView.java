@@ -12,6 +12,7 @@ import com.xrbpowered.zoomui.GraphAssist;
 import com.xrbpowered.zoomui.UIContainer;
 import com.xrbpowered.zoomui.UIElement;
 import com.xrbpowered.zoomui.base.UIPanView;
+import com.xrbpowered.zoomui.std.UIArrowButton;
 import com.xrbpowered.zoomui.std.UIScrollContainer;
 import com.xrbpowered.zoomui.std.text.UITextBox;
 
@@ -69,6 +70,7 @@ public class FileDiffView extends UIElement {
 		@Override
 		protected void paintBorder(GraphAssist g) {
 			g.hborder(this, GraphAssist.TOP, colorBorder);
+			viewer.paintMarginMarkers(g, (int)getHeight());
 		}
 		
 		@Override
@@ -80,6 +82,7 @@ public class FileDiffView extends UIElement {
 	}
 	
 	protected int displayLine = 0;
+	protected int lastDisplayLine = 0;
 	protected float pixelScale = 0;
 	protected int lineHeight = 0;
 	protected int descent = 0;
@@ -98,6 +101,9 @@ public class FileDiffView extends UIElement {
 	public String[] linesA = empty;
 	public String[] linesB = empty;
 	protected ArrayList<Line> lines = new ArrayList<>();
+	
+	protected int firstDeletion, firstInsertion;
+	protected int lastDeletion, lastInsertion;
 	
 	public FileDiffView(UIContainer parent) {
 		super(parent);
@@ -119,12 +125,28 @@ public class FileDiffView extends UIElement {
 		
 		ArrayList<Diff.DiffChunk> diff = Diff.diffText(this.linesA, this.linesB);
 		
+		firstDeletion = -1;
+		firstInsertion = -1;
+		lastDeletion = -1;
+		lastInsertion = -1;
 		lines.clear();
+		int index = 0;
 		for(Diff.DiffChunk i : diff) {
 			for(int j=0; j<i.length; j++) {
 				lines.add(new Line(i.type,
 						i.type==DiffType.inserted ? -1 : i.startA+j,
 						i.type==DiffType.deleted ? -1 : i.startB+j));
+				if(i.type==DiffType.deleted) {
+					if(firstDeletion<0)
+						firstDeletion = index;
+					lastDeletion = index;
+				}
+				if(i.type==DiffType.inserted) {
+					if(firstInsertion<0)
+						firstInsertion = index;
+					lastInsertion = index;
+				}
+				index++;
 			}
 		}
 		updateSize = true;
@@ -189,10 +211,12 @@ public class FileDiffView extends UIElement {
 		
 		int y = y0;
 		float w = 0;
+		lastDisplayLine = displayLine;
 		for(int lineIndex = 0; lineIndex<lines.size(); lineIndex++) {
 			Line line = lines.get(lineIndex);
 			if(lineIndex>=displayLine && y-lineHeight<maxy) {
 				drawLine(g, lineIndex, y, line);
+				lastDisplayLine = lineIndex;
 				y += lineHeight;
 			}
 
@@ -270,6 +294,25 @@ public class FileDiffView extends UIElement {
 		g.setColor(borderColors[0]);
 		g.line(xmargin, y-lineHeight+descent, xmargin, maxy);
 		g.line(xmargin*2, y-lineHeight+descent, xmargin*2, maxy);
+	}
+	
+	protected void paintMarginMarkers(GraphAssist g, int h) {
+		// in parent coordinates, called from Area 
+		float pix = getPixelScale();
+		
+		int x = (int)(xmargin*pix/2);
+		g.setColor(colorRed);
+		if(firstDeletion>=0 && firstDeletion<displayLine)
+			UIArrowButton.drawUpArrow(g, x, UIArrowButton.arrowSpan);
+		if(lastDeletion>=0 && lastDeletion>lastDisplayLine)
+			UIArrowButton.drawDownArrow(g, x, h-UIArrowButton.arrowSpan);
+		
+		x = (int)(xmargin*3*pix/2);
+		g.setColor(colorGreen);
+		if(firstInsertion>=0 && firstInsertion<displayLine)
+			UIArrowButton.drawUpArrow(g, x, UIArrowButton.arrowSpan);
+		if(lastInsertion>=0 && lastInsertion>lastDisplayLine)
+			UIArrowButton.drawDownArrow(g, x, h-UIArrowButton.arrowSpan);
 	}
 
 	public static int numberWidth(FontMetrics fm, int n, String format, int margin) {
