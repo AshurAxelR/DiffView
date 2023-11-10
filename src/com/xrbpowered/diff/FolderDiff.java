@@ -17,7 +17,9 @@ public class FolderDiff {
 	public static boolean loadGitIgnore = false;
 	public static boolean loadDiffIgnore = true;
 	
-	public static class DiffItem {
+	public static final int limitCompareFiles = 128*1024;
+	
+	public class DiffItem {
 		public DiffType type;
 		public Path path;
 		public boolean isDir = false;
@@ -48,12 +50,29 @@ public class FolderDiff {
 		}
 	}
 	
+	public final Path rootA, rootB;
+	public final ArrayList<DiffItem> res = new ArrayList<>();
+
+	public int progress = 0;
+	public String currentDir = "";
+	
+	public FolderDiff(String pathA, String pathB) {
+		this.rootA = FolderDiff.makeRoot(pathA);
+		this.rootB = FolderDiff.makeRoot(pathB);
+	}
+	
 	public static Path makeRoot(String path) {
 		return new File(path).toPath().toAbsolutePath().normalize();
 	}
 	
-	private static int countFiles(Path root, File dir, Ignore ignore) {
+	private static String relativeName(Path root, File f) {
+		String s = root.relativize(f.toPath()).toString().replace(File.separator, "/");
+		return s.isEmpty() ? "." : s;
+	}
+	
+	private int countFiles(Path root, File dir, Ignore ignore) {
 		TaskInterruptedException.check();
+		currentDir = relativeName(root, dir);
 		
 		String[] list = (dir==null) ? null : dir.list();
 		if(list==null)
@@ -76,6 +95,7 @@ public class FolderDiff {
 				sum += countFiles(root, f, ignore);
 			else
 				sum++;
+			progress++;
 		}
 		return sum;
 	}
@@ -101,14 +121,18 @@ public class FolderDiff {
 		try(
 			FileInputStream inA = new FileInputStream(fA);
 			FileInputStream inB = new FileInputStream(fB);
-			DataInputStream dataA = new DataInputStream(new BufferedInputStream(inA));
-			DataInputStream dataB = new DataInputStream(new BufferedInputStream(inB));
+			DataInputStream dataA = new DataInputStream(new BufferedInputStream(inA, limitCompareFiles));
+			DataInputStream dataB = new DataInputStream(new BufferedInputStream(inB, limitCompareFiles));
 		) {
 			if(inA.available()!=inB.available())
 				return true;
+			int bytes = 0;
 			while(dataA.available()>0) {
 				if(dataA.readByte()!=dataB.readByte())
 					return true;
+				bytes++;
+				if(bytes>limitCompareFiles)
+					break;
 			}
 			return false;
 		}
@@ -132,9 +156,10 @@ public class FolderDiff {
 		return ignore;
 	}
 
-	public static void compareFolders(Path rootA, File dirA, Path rootB, File dirB, Ignore ignore, ArrayList<DiffItem> res) {
+	public void compareFolders(File dirA, File dirB, Ignore ignore) {
 		TaskInterruptedException.check();
-		
+		currentDir = relativeName(rootB, dirB);
+
 		ignore = expandIgnore(rootB, dirB, ignore);
 		
 		TreeSet<Path> setA = listPaths(rootA, dirA, ignore);
@@ -155,7 +180,7 @@ public class FolderDiff {
 				boolean isDirA = fA.isDirectory();
 				boolean isDirB = fB.isDirectory();
 				if(isDirA && isDirB) {
-					compareFolders(rootA, fA, rootB, fB, ignore, res);
+					compareFolders(fA, fB, ignore);
 					continue;
 				}
 				else if(isDirA) {
@@ -178,9 +203,17 @@ public class FolderDiff {
 				i.setDir(rootB, fB, ignore);
 			}
 			
+			progress++;
 			if(i.type!=DiffType.notChanged)
 				res.add(i);
 		}
 	}
 	
+	public void compareFolders(Ignore ignore) {
+		progress = 0;
+		currentDir = "";
+		res.clear();
+		compareFolders(rootA.toFile(), rootB.toFile(), ignore);
+	}
+
 }

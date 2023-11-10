@@ -140,13 +140,16 @@ public class FolderDiffView extends UIListBox {
 	public void setDiff(String pathA, String pathB) {
 		getView().removeAllChildren();
 		
-		ArrayList<DiffItem> res = new ArrayList<>();
+		ArrayList<DiffItem> res;
 		if(pathA!=null && pathB!=null) {
-			Path rootA = FolderDiff.makeRoot(pathA);
-			Path rootB = FolderDiff.makeRoot(pathB);
-			FolderDiff.compareFolders(rootA, rootA.toFile(), rootB, rootB.toFile(), Ignore.defaultIgnore, res);
-			this.pathA = rootA;
-			this.pathB = rootB;
+			FolderDiff diff = new FolderDiff(pathA, pathB);
+			diff.compareFolders(Ignore.defaultIgnore);
+			res = diff.res;
+			this.pathA = diff.rootA;
+			this.pathB = diff.rootB;
+		}
+		else {
+			res = new ArrayList<>();
 		}
 		
 		maxSize = 0;
@@ -154,13 +157,12 @@ public class FolderDiffView extends UIListBox {
 		setItems(res);
 	}
 	
-	public void setDiff(Path rootA, Path rootB, ArrayList<DiffItem> res) {
-		this.pathA = rootA;
-		this.pathB = rootB;
-		
+	public void setDiff(FolderDiff diff) {
+		this.pathA = diff.rootA;
+		this.pathB = diff.rootB;
 		maxSize = 0;
 		itemMargin = 0;
-		setItems(res);
+		setItems(diff.res);
 	}
 
 	@Override

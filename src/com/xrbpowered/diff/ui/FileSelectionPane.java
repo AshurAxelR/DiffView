@@ -100,7 +100,6 @@ public class FileSelectionPane extends UIContainer {
 			txtPathB.editor.setText(pathB);
 		if(diff!=null)
 			diff.setDiff(pathA, pathB);
-		// TODO apply path back to file dialogs
 	}
 	
 	@Override

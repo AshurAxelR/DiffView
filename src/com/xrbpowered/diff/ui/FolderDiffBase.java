@@ -1,34 +1,32 @@
 package com.xrbpowered.diff.ui;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.util.ArrayList;
 
 import com.xrbpowered.diff.DiffType;
 import com.xrbpowered.diff.FolderDiff;
-import com.xrbpowered.diff.FolderDiff.DiffItem;
 import com.xrbpowered.diff.Ignore;
 import com.xrbpowered.utils.TaskInterruptedException;
 import com.xrbpowered.utils.UISafeThread;
 import com.xrbpowered.zoomui.UIContainer;
+import com.xrbpowered.zoomui.base.UILayersContainer;
 import com.xrbpowered.zoomui.std.UIListItem;
 import com.xrbpowered.zoomui.std.UISplitContainer;
 
 public class FolderDiffBase extends UIContainer implements DiffListener {
 
 	private final class TaskThread extends UISafeThread {
-		public final Path rootA, rootB;
-		ArrayList<DiffItem> res = new ArrayList<>();
+		private final FolderDiff diff;
+		private final UIProgressDisplay progress;
 		
 		public TaskThread(String pathA, String pathB) {
-			this.rootA = FolderDiff.makeRoot(pathA);
-			this.rootB = FolderDiff.makeRoot(pathB);
+			diff = new FolderDiff(pathA, pathB);
+			progress = new UIProgressDisplay(box, diff);
 		}
 		
 		@Override
 		public void run() {
 			try {
-				FolderDiff.compareFolders(rootA, rootA.toFile(), rootB, rootB.toFile(), Ignore.defaultIgnore, res);
+				diff.compareFolders(Ignore.defaultIgnore);
 				safeUIRunAsync();
 			}
 			catch (TaskInterruptedException e) {
@@ -37,7 +35,8 @@ public class FolderDiffBase extends UIContainer implements DiffListener {
 		
 		@Override
 		protected void uiRun() {
-			folderDiffView.setDiff(rootA, rootB, res);
+			progress.dismiss();
+			folderDiffView.setDiff(diff);
 			diffView.viewer.setDiff(null, null);
 			error.show("Select a file in the list to view the difference.");
 			repaint();
@@ -49,13 +48,15 @@ public class FolderDiffBase extends UIContainer implements DiffListener {
 	public final FileDiffView.Area diffView;
 	public final ErrorOverlay error;
 	
+	private final UILayersContainer box;
 	private final UISplitContainer split;
 	private TaskThread taskThread = null;
 	
 	public FolderDiffBase(UIContainer parent) {
 		super(parent);
 		fileSel = new FileSelectionPane(parent, true).setDiffListener(this);
-		split = new UISplitContainer(this, false, 0.25f);
+		box = new UILayersContainer(this);
+		split = new UISplitContainer(box, false, 0.25f);
 		
 		folderDiffView = new FolderDiffView(split.first) {
 			@Override
@@ -100,9 +101,9 @@ public class FolderDiffBase extends UIContainer implements DiffListener {
 	@Override
 	public void layout() {
 		fileSel.layout();
-		split.setLocation(0, fileSel.getHeight());
-		split.setSize(getWidth(), getHeight()-fileSel.getHeight());
-		split.layout();
+		box.setLocation(0, fileSel.getHeight());
+		box.setSize(getWidth(), getHeight()-fileSel.getHeight());
+		box.layout();
 	}
 
 }
