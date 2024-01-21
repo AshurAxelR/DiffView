@@ -56,6 +56,9 @@ public class DiffView {
 		params.addFlagParam("-gitignore", v -> FolderDiff.loadGitIgnore = v, "load .gitignore from directories");
 		params.addFlagParam("-nodiffignore", v -> FolderDiff.loadGitIgnore = v, "do not load diff.ignore from directories");
 		params.addStrParam("-i", v -> { Ignore.defaultIgnore = Ignore.load(new File(v), null, null); }, "global diff.ignore file");
+		params.addFlagParam("-trimspace", v -> Diff.trimSpace = v, "ignore leading or trailing whitespace on each line");
+		params.addFlagParam("-ignorespace", v -> Diff.ignoreSpace = v, "ignore difference in whitespace");
+		params.addFlagParam("-ignorecase", v -> Diff.ignoreCase = v, "ignore case");
 		if(!params.parseParams(args))
 			System.exit(-1);
 		

@@ -45,6 +45,24 @@ import java.util.HashMap;
 public class Diff {
 
 	/**
+	 * When set to true, all leading and trailing whitespace characters
+	 * are stripped out before the comparison is done.
+	 */
+	public static boolean trimSpace = false;
+	
+	/**
+	 * When set to true, all whitespace characters are converted to
+	 * a single space character before the comparison is done.
+	 */
+	public static boolean ignoreSpace = false;
+	
+	/**
+	 * When set to true, all characters are converted to their lowercase
+	 * equivalence before the comparison is done.
+	 */
+	public static boolean ignoreCase = false;
+	
+	/**
 	 * details of one difference
 	 */
 	public static class DiffChunk {
@@ -75,16 +93,8 @@ public class Diff {
 	 * duplicates in there, and generating a new number each time a new textline is
 	 * inserted.
 	 * 
-	 * @param linesA      A-version of the text (usually the old one)
-	 * @param linesB      B-version of the text (usually the new one)
-	 * @param trimSpace   When set to true, all leading and trailing whitespace
-	 *                    characters are stripped out before the comparision is
-	 *                    done.
-	 * @param ignoreSpace When set to true, all whitespace characters are converted
-	 *                    to a single space character before the comparision is
-	 *                    done.
-	 * @param ignoreCase  When set to true, all characters are converted to their
-	 *                    lowercase equivalence before the comparision is done.
+	 * @param linesA A-version of the text (usually the old one)
+	 * @param linesB B-version of the text (usually the new one)
 	 * @return Returns a array of Items that describe the differences.
 	 */
 	public static ArrayList<DiffChunk> diffText(String[] linesA, String[] linesB) {
@@ -148,8 +158,7 @@ public class Diff {
 	 * every unique textline so further work can work only with simple numbers.
 	 * 
 	 * @param lines the input text
-	 * @param h     This externally initialized hashtable is used for storing all
-	 *              ever used textlines.
+	 * @param h This externally initialized hashtable is used for storing all ever used textlines.
 	 * @return an array of integers.
 	 */
 	private static int[] diffCodes(String[] lines, HashMap<String, Integer> h) {
@@ -158,6 +167,14 @@ public class Diff {
 		int lastUsedCode = h.size();
 		for(int i = 0; i<lines.length; ++i) {
 			String s = lines[i];
+			
+			if(trimSpace)
+				s = s.trim();
+			if(ignoreSpace)
+				s = s.replaceAll("\\s+", " ");
+			if(ignoreCase)
+				s = s.toLowerCase();
+			
 			Integer code = h.get(s);
 			if(code==null) {
 				lastUsedCode++;
@@ -172,16 +189,14 @@ public class Diff {
 	/**
 	 * This is the algorithm to find the Shortest Middle Snake (SMS).
 	 * 
-	 * @param dataA      sequence A
-	 * @param lowerA     lower bound of the actual range in DataA
-	 * @param upperA     upper bound of the actual range in DataA (exclusive)
-	 * @param dataB      sequence B
-	 * @param lowerB     lower bound of the actual range in DataB
-	 * @param upperB     upper bound of the actual range in DataB (exclusive)
-	 * @param downVector a vector for the (0,0) to (x,y) search. Passed as a
-	 *                   parameter for speed reasons.
-	 * @param upVector   a vector for the (u,v) to (N,M) search. Passed as a
-	 *                   parameter for speed reasons.
+	 * @param data sequence A
+	 * @param lowerA lower bound of the actual range in DataA
+	 * @param upperA upper bound of the actual range in DataA (exclusive)
+	 * @param dataB sequence B
+	 * @param lowerB lower bound of the actual range in DataB
+	 * @param upperB upper bound of the actual range in DataB (exclusive)
+	 * @param downVector a vector for the (0,0) to (x,y) search. Passed as a parameter for speed reasons.
+	 * @param upVector   a vector for the (u,v) to (N,M) search. Passed as a parameter for speed reasons.
 	 * @return a MiddleSnakeData record containing x,y and u,v
 	 */
 	private static MiddleSnakeData sms(DiffData dataA, int lowerA, int upperA, DiffData dataB, int lowerB, int upperB,
@@ -292,16 +307,14 @@ public class Diff {
 	 * recursively parts of the A and B sequences. To avoid copying these arrays the
 	 * lower and upper bounds are passed while the sequences stay constant.
 	 * 
-	 * @param dataA      sequence A
-	 * @param lowerA     lower bound of the actual range in DataA
-	 * @param upperA     upper bound of the actual range in DataA (exclusive)
-	 * @param dataB      sequence B
-	 * @param lowerB     lower bound of the actual range in DataB
-	 * @param upperB     upper bound of the actual range in DataB (exclusive)
-	 * @param downVector a vector for the (0,0) to (x,y) search. Passed as a
-	 *                   parameter for speed reasons.
-	 * @param upVector   a vector for the (u,v) to (N,M) search. Passed as a
-	 *                   parameter for speed reasons.
+	 * @param dataA sequence A
+	 * @param lowerA lower bound of the actual range in DataA
+	 * @param upperA upper bound of the actual range in DataA (exclusive)
+	 * @param dataB sequence B
+	 * @param lowerB lower bound of the actual range in DataB
+	 * @param upperB upper bound of the actual range in DataB (exclusive)
+	 * @param downVector a vector for the (0,0) to (x,y) search. Passed as a parameter for speed reasons.
+	 * @param upVector   a vector for the (u,v) to (N,M) search. Passed as a parameter for speed reasons.
 	 */
 	private static void lcs(DiffData dataA, int lowerA, int upperA, DiffData dataB, int lowerB, int upperB,
 			int[] downVector, int[] upVector) {
