@@ -101,7 +101,7 @@ public class FolderDiffView extends UIListBox {
 				if(!diff.isDir)
 					g.setColor(sel ? colorSelectedText : Color.BLACK);
 				g.drawString(name, x, getHeight()/2, GraphAssist.LEFT, GraphAssist.CENTER);
-				(diff.isDir ? folderIcon : fileIcon).paint(g.graph, sel ? 1 : 0, 4, 4, 16, getPixelScale(), true);
+				(diff.isDir ? folderIcon : fileIcon).paint(g.graph, sel ? 1 : 0, 4, 4, 16, getPixelSize(), true);
 				if(clip) g.popClip();
 			}
 			
@@ -114,7 +114,7 @@ public class FolderDiffView extends UIListBox {
 			else {
 				SvgIcon icon = diffIcons[type];
 				if(icon!=null)
-					icon.paint(g.graph, 0, getWidth()-20, 4, 16, getPixelScale(), true);
+					icon.paint(g.graph, 0, getWidth()-20, 4, 16, getPixelSize(), true);
 			}
 			
 			if(rightx>0 && x+nameWidth>rightx)

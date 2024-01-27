@@ -32,7 +32,7 @@ public class FileDiffBase extends UIContainer implements DiffListener {
 	@Override
 	public void layout() {
 		fileSel.layout();
-		box.setLocation(0, fileSel.getHeight());
+		box.setPosition(0, fileSel.getHeight());
 		box.setSize(getWidth(), getHeight()-fileSel.getHeight());
 		box.layout();
 	}

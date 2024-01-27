@@ -63,7 +63,7 @@ public class FileDiffView extends UIElement {
 		}
 		
 		@Override
-		protected void paintSelf(GraphAssist g) {
+		protected void paintBackground(GraphAssist g) {
 			g.fill(this, Color.WHITE);
 		}
 		
@@ -75,7 +75,7 @@ public class FileDiffView extends UIElement {
 		
 		@Override
 		protected float layoutView() {
-			viewer.setLocation(0, 0);
+			viewer.setPosition(0, 0);
 			viewer.updateSize();
 			return 0;
 		}
@@ -298,7 +298,7 @@ public class FileDiffView extends UIElement {
 	
 	protected void paintMarginMarkers(GraphAssist g, int h) {
 		// in parent coordinates, called from Area 
-		float pix = getPixelScale();
+		float pix = getPixelSize();
 		
 		int x = (int)(xmargin*pix/2);
 		g.setColor(colorRed);

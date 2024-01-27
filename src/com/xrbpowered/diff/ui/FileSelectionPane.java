@@ -103,7 +103,7 @@ public class FileSelectionPane extends UIContainer {
 	}
 	
 	@Override
-	protected void paintSelf(GraphAssist g) {
+	protected void paintBackground(GraphAssist g) {
 		g.fill(this, Color.WHITE); // new Color(0xf2f2f2));
 		g.setFont(UITextBox.font);
 		g.setColor(Color.BLACK);
@@ -115,11 +115,11 @@ public class FileSelectionPane extends UIContainer {
 	public void layout() {
 		setSize(getWidth(), txtPathA.getHeight()*2+16);
 		txtPathA.setSize(getWidth()-72-btnBrowseA.getWidth(), txtPathA.getHeight());
-		txtPathA.setLocation(64, 4);
-		btnBrowseA.setLocation(txtPathA.getX()+txtPathA.getWidth()+4, txtPathA.getY());
+		txtPathA.setPosition(64, 4);
+		btnBrowseA.setPosition(txtPathA.getX()+txtPathA.getWidth()+4, txtPathA.getY());
 		txtPathB.setSize(txtPathA.getWidth(), txtPathA.getHeight());
-		txtPathB.setLocation(txtPathA.getX(), txtPathA.getHeight()+8);
-		btnBrowseB.setLocation(txtPathB.getX()+txtPathB.getWidth()+4, txtPathB.getY());
+		txtPathB.setPosition(txtPathA.getX(), txtPathA.getHeight()+8);
+		btnBrowseB.setPosition(txtPathB.getX()+txtPathB.getWidth()+4, txtPathB.getY());
 		super.layout();
 	}
 
